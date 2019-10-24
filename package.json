@@ -1,0 +1,23 @@
+{
+  "name": "mysql-ithm",
+  "version": "1.0.0",
+  "description": "\u0016一款nodejs操作mysql数据库的orm库",
+  "main": "index.js",
+  "scripts": {
+    "test": "\u001b[A\u001b[:npm i mysql-ithm\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D\u001b[Dmstall\u001b[D\u001b[D\u001b[D\u001b[D\u001b[n\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[C\u001b[D\u001b[D\u001b[D\u001b[D\u001b[D \u001b[C\u001b[C\u001b mysql-ithm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kxzkane/mysql-ithm.git"
+  },
+  "keywords": [
+    "mysql",
+    "orm"
+  ],
+  "author": "张晓坤",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kxzkane/mysql-ithm/issues"
+  },
+  "homepage": "https://github.com/kxzkane/mysql-ithm#readme"
+}
