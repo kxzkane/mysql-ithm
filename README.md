@@ -19,7 +19,7 @@
 * 首先需要确保你的项目已经安装了mysql
   * `npm install mysql`
 * 安装`mysql-ithm`
-  * `npm install ithm`
+  * `npm install mysql-ithm`
 
 
 
