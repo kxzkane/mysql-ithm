@@ -6,6 +6,7 @@
 
 * 黑马程序员：[http://www.itheima.com](http://www.itheima.com/)
 * 官方文档地址：[https://github.com/kxzkane/mysql-ithm](https://github.com/kxzkane/mysql-ithm)
+* npm地址：[https://www.npmjs.com/package/mysql-ithm](https://www.npmjs.com/package/mysql-ithm)
 
 * 技术亮点
   * (1)基于ORM技术，使用对象的方式来操作mysql数据库，而无需编写任何sql语句
