@@ -169,7 +169,7 @@ let hm = {
     * @param {String} database: 数据库名称 默认hm
     * @return: 
     */
-    connect: function ({ host = 'localhost', port = 3306, user = 'root', password = 'root', database = 'hm' }) {
+    connect: function ({ host = 'localhost', port = 3306, user = '', password = '', database = 'hm' }) {
         databaseName = database;//全局存储当前数据库名称
 
         connection = mysql.createConnection({
@@ -230,7 +230,10 @@ let hm = {
                 createQueue.name = name;
                 createQueue.options = options;
             }else{
-                insertQueue.model.insert(insertQueue.obj,insertQueue.callback);
+                if(insertQueue.model){
+                    insertQueue.insert(insertQueue.obj,insertQueue.callback);
+                }
+                
             }
         });
         return new Model(name, options);
