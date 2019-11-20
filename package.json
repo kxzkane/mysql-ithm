@@ -1,6 +1,6 @@
 {
   "name": "mysql-ithm",
-  "version": "1.0.5",
+  "version": "2.0.1",
   "description": "\u0016一款nodejs操作mysql数据库的orm库",
   "main": "index.js",
   "scripts": {
@@ -19,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/kxzkane/mysql-ithm/issues"
   },
-  "homepage": "https://github.com/kxzkane/mysql-ithm#readme"
+  "homepage": "https://github.com/kxzkane/mysql-ithm#readme",
+  "dependencies": {
+    "mysql": "~2.17.1"
+  },
+  "devDependencies": {
+    "mysql": "~2.17.1"
+  }
+  
 }
