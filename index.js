@@ -1,15 +1,12 @@
 const mysql = require('mysql');
-
-let connection;
-let insertQueue = {};
-let createQueue = {};
-let databaseName = '';
+//数据库配置
+let options = {};
+let tableSQL = '';
 
 function Model(name, option) {
     this.name = name;
     this.option = option;
 };
-
 
 /**
 * @description: 查询数据
@@ -41,9 +38,9 @@ Model.prototype.find = function (options, callback) {
 Model.prototype.limit = function (options, callback) {
     var str = '';
     if (!options.where) {
-        str = `select * from ${this.name} limit ${(options.number - 1)*options.count},${options.count}`;
-    }else {
-        str = str = `select * from ${this.name} where ${options.where} limit ${(options.number - 1)*options.count},${options.count}`;
+        str = `select * from ${this.name} limit ${(options.number - 1) * options.count},${options.count}`;
+    } else {
+        str = str = `select * from ${this.name} where ${options.where} limit ${(options.number - 1) * options.count},${options.count}`;
     };
     console.log(str);
     connection.query(str, (error, results, fields) => {
@@ -58,28 +55,26 @@ Model.prototype.limit = function (options, callback) {
 * @param {Function} callback :（req,results）=>{}
 */
 Model.prototype.insert = function (obj, callback) {
-    //先执行一次，激活数据库
-    let keys = [];
-    let values = '';
-    for (var key in obj) {
-        keys.push(key);
-        values += `"${obj[key]}",`;
-    };
-    values = values.replace(/,$/, '');
-    let str = `INSERT INTO ${this.name} (${keys.join()}) VALUES (${values})`;
-    //console.log(str);
+    this.connect(err => {
+        if (err) {
+            throw err;
+        } else {
+            connection.query(tableSQL, (error, results, fields) => {
+                let keys = [];
+                let values = '';
+                for (var key in obj) {
+                    keys.push(key);
+                    values += `"${obj[key]}",`;
+                };
+                values = values.replace(/,$/, '');
+                let str = `INSERT INTO ${this.name} (${keys.join()}) VALUES (${values})`;
+                connection.query(str, (error, results, fields) => {
+                    callback(error, results);
+                });
+            });
 
-    var model1 = this;
-    connection.query(str, (error, results, fields) => {
-        if (error && !insertQueue.obj) {
-            insertQueue.obj = obj;
-            insertQueue.callback = callback;
-            insertQueue.model = model1;
-        }else{
-            callback(error,results,fields);
         }
     });
-    return this;
 };
 
 /**
@@ -159,51 +154,108 @@ Model.prototype.drop = function (callback) {
     return this;
 };
 
+//连接检测
+Model.prototype.connect = function (callback) {
+    let p1 = new Promise((resolve, reject) => {
+        connection.connect((err) => {
+            if (err) {
+                //console.log(err.stack);
+                //console.log(err);//42000 数据库不存在  28000账号错误
+                //console.log(err.sqlState);//42000 数据库不存在  28000账号错误
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+    p1.then(() => {
+        callback(null);
+    }, err => {
+        if (err.sqlState == 42000) {
+            createDatabase(callback);
+        } else if (err.sqlState == 28000) {
+            callback('数据库账号或密码错误');
+        } else {
+            callback(err);
+        }
+    });
+};
+
+//创建数据库
+let createDatabase = function (callback) {
+    let p2 = new Promise((resolve, reject) => {
+        connection = mysql.createConnection({
+            host: options.host,//数据库地址
+            port: options.port,//端口号
+            user: options.user,//用户名，没有可不填
+            password: options.password,//密码，没有可不填
+        });
+        connection.connect((err) => {
+            //if (err) throw error;
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+    let p3 = new Promise((resolve, reject) => {
+        connection.query(`CREATE DATABASE ${options.database}`, (err, results, fields) => {
+            //if (error) throw error;
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+
+        });
+    });
+
+    let p4 = new Promise((resolve, reject) => {
+        connection.query(`use ${options.database}`, (err, results, fields) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+
+    let pAll = Promise.all([p2, p3, p4]);
+
+    pAll.then(() => {
+        callback(null);
+    }).catch((err) => {
+        callback(err);
+    });
+}
+
+
+
 let hm = {
     /**
     * @description:连接数据库
     * @param {String} host: 主机名 默认localhost
     * @param {Number} port: 端口号 默认3306
-    * @param {String} user: 用户名 默认root
-    * @param {String} password: 密码 默认root
+    * @param {String} user: 用户名 
+    * @param {String} password: 密码 
     * @param {String} database: 数据库名称 默认hm
     * @return: 
     */
     connect: function ({ host = 'localhost', port = 3306, user = '', password = '', database = 'hm' }) {
         databaseName = database;//全局存储当前数据库名称
 
-        connection = mysql.createConnection({
+        options = {
             host,//数据库地址
             port,//端口号
             user,//用户名，没有可不填
             password,//密码，没有可不填
             database//数据库名称
-        });
-        connection.connect((err) => {
-            if (err) {
-                //console.log(connection);
-                connection = mysql.createConnection({
-                    host,//数据库地址
-                    port,//端口号
-                    user,//用户名，没有可不填
-                    password,//密码，没有可不填
-                });
-                connection.connect((err) => {
-                    //if (err) throw error;
-                    connection.query(`CREATE DATABASE ${database}`, (error, results, fields) => {
-                        //if (error) throw error;
-                        connection.query(`use ${database}`, (error, results, fields) => {
-                            if (!error) {
-                                if (createQueue.name) {
-                                    hm.model(createQueue.name,createQueue.options);
-                                }
-                            }
-                        });
+        };
+        connection = mysql.createConnection(options);
 
-                    });
-                });
-            }
-        });
     },
     /**
     * @description:创建model (表格模型对象)
@@ -223,19 +275,9 @@ let hm = {
             }
         };
         str = str.replace(/,$/, '');
-        console.log(`CREATE TABLE ${name} (${str})`);
+        //console.log(`CREATE TABLE ${name} (${str})`);
         //console.log(str);
-        connection.query(`CREATE TABLE ${name} (${str})`, (error, results, fields) => {
-            if (error) {
-                createQueue.name = name;
-                createQueue.options = options;
-            }else{
-                if(insertQueue.model){
-                    insertQueue.insert(insertQueue.obj,insertQueue.callback);
-                }
-                
-            }
-        });
+        tableSQL = `CREATE TABLE ${name} (${str})`;
         return new Model(name, options);
     }
 };
