@@ -17,8 +17,6 @@
 
 # 01-安装
 
-* 首先需要确保你的项目已经安装了mysql
-  * `npm install mysql`
 * 安装`mysql-ithm`
   * `npm install mysql-ithm`
 
@@ -28,7 +26,6 @@
 
 ```javascript
 //导入模块
-const mysql = require('mysql');
 const hm = require('mysql-ithm');
 ```
 
@@ -38,7 +35,6 @@ const hm = require('mysql-ithm');
 
 ```javascript
 //1.导入模块
-const mysql = require('mysql');
 const hm = require('mysql-ithm');
 
 //2.连接数据库
