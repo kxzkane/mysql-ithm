@@ -51,7 +51,7 @@ Model.prototype.limit = function (options, callback) {
 
 /**
 * @description: 插入数据
-* @param {Object} 
+* @param {Object} obj:对象或者数组
 * @param {Function} callback :（req,results）=>{}
 */
 Model.prototype.insert = function (obj, callback) {
@@ -60,22 +60,32 @@ Model.prototype.insert = function (obj, callback) {
             throw err;
         } else {
             connection.query(tableSQL, (error, results, fields) => {
-                let keys = [];
-                let values = '';
-                for (var key in obj) {
-                    keys.push(key);
-                    values += `"${obj[key]}",`;
-                };
-                values = values.replace(/,$/, '');
-                let str = `INSERT INTO ${this.name} (${keys.join()}) VALUES (${values})`;
-                connection.query(str, (error, results, fields) => {
-                    callback(error, results);
-                });
+                if(Array.isArray(obj)){
+                    for(var i = 0;i<obj.length;i++){
+                        this.insertObj(obj[i],callback)
+                    }
+                }else{
+                    this.insertObj(obj,callback)
+                }
             });
 
         }
     });
 };
+
+Model.prototype.insertObj = function (obj, callback) {
+    let keys = [];
+    let values = '';
+    for (var key in obj) {
+        keys.push(key);
+        values += `"${obj[key]}",`;
+    };
+    values = values.replace(/,$/, '');
+    let str = `INSERT INTO ${this.name} (${keys.join()}) VALUES (${values})`;
+    connection.query(str, (error, results, fields) => {
+        callback(error, results);
+    });
+}
 
 /**
 * @description: 更新数据

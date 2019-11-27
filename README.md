@@ -78,6 +78,20 @@ studentModel.insert({name:'张三10',age:30},(err,results)=>{
 });
 ```
 
+* 批量增加
+```javascript
+var arr = [];
+for (var i = 1; i <= 10; i++) {
+    arr.push({ name: '张三', age: 30 })
+}
+
+studentModel.insert(arr, (err, results) => {
+    console.log(err);
+    console.log(results);
+    if (!err) console.log('增加成功');
+});
+```
+
 
 
 ##  1.2-查询操作
