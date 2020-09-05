@@ -1,6 +1,6 @@
 {
   "name": "mysql-ithm",
-  "version": "2.1.2",
+  "version": "2.2.3",
   "description": "\u0016一款nodejs操作mysql数据库的orm库",
   "main": "index.js",
   "scripts": {

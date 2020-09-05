@@ -2,6 +2,7 @@ const mysql = require('mysql');
 //数据库配置
 let options = {};
 let tableSQL = '';
+let isConnect = false;
 
 function Model(name, option) {
     this.name = name;
@@ -11,23 +12,56 @@ function Model(name, option) {
 /**
 * @description: 查询数据
 * @param {} options：可选参数
-* @param {Function} callback :（req,results）=>{}
+* @param {Function} callback :（err,results）=>{}
 */
 Model.prototype.find = function (options, callback) {
-    var str = '';
-    if (!callback) {
-        str = `select * from ${this.name}`;
-        callback = options;
-    } else if (options.constructor == Array) {
-        str = `select ${options.join()} from ${this.name}`;
+    if (!isConnect) {
+        this.connect(err => {
+            isConnect = true;
+            var str = '';
+            if (!callback) {
+                str = `select * from ${this.name}`;
+                callback = options;
+            } else if (options.constructor == Array) {
+                str = `select ${options.join()} from ${this.name}`;
+            } else {
+                str = `select * from ${this.name} where ${options}`;
+            };
+            //console.log(str);
+            connection.query(str, (error, results, fields) => {
+                // console.log(error.sqlState);
+                if (error.sqlState == '42S02') {
+                    callback('表格不存在', []);
+                } else {
+                    callback(error, results, fields);
+                };
+
+            });
+            return this;
+        })
     } else {
-        str = `select * from ${this.name} where ${options}`;
-    };
-    //console.log(str);
-    connection.query(str, (error, results, fields) => {
-        callback(error, results, fields);
-    });
-    return this;
+        var str = '';
+        if (!callback) {
+            str = `select * from ${this.name}`;
+            callback = options;
+        } else if (options.constructor == Array) {
+            str = `select ${options.join()} from ${this.name}`;
+        } else {
+            str = `select * from ${this.name} where ${options}`;
+        };
+        //console.log(str);
+        connection.query(str, (error, results, fields) => {
+            // console.log(error.sqlState);
+
+            if (error.sqlState == '42S02') {
+                callback('表格不存在', []);
+            } else {
+                callback(error, results, fields);
+            };
+        });
+        return this;
+    }
+
 };
 
 /**
@@ -52,25 +86,36 @@ Model.prototype.limit = function (options, callback) {
 /**
 * @description: 插入数据
 * @param {Object} obj:对象或者数组
-* @param {Function} callback :（req,results）=>{}
+* @param {Function} callback :（err,results）=>{}
 */
 Model.prototype.insert = function (obj, callback) {
-    this.connect(err => {
-        if (err) {
-            throw err;
-        } else {
-            connection.query(tableSQL, (error, results, fields) => {
-                if(Array.isArray(obj)){
-                    for(var i = 0;i<obj.length;i++){
-                        this.insertObj(obj[i],callback)
+    if (!isConnect) {
+        this.connect(err => {
+            if (err) {
+                throw err;
+            } else {
+                connection.query(tableSQL, (error, results, fields) => {
+                    if (Array.isArray(obj)) {
+                        for (var i = 0; i < obj.length; i++) {
+                            this.insertObj(obj[i], callback)
+                        }
+                    } else {
+                        this.insertObj(obj, callback)
                     }
-                }else{
-                    this.insertObj(obj,callback)
-                }
-            });
+                });
 
+            }
+        });
+    } else {
+        if (Array.isArray(obj)) {
+            for (var i = 0; i < obj.length; i++) {
+                this.insertObj(obj[i], callback)
+            }
+        } else {
+            this.insertObj(obj, callback)
         }
-    });
+    }
+
 };
 
 Model.prototype.insertObj = function (obj, callback) {
@@ -91,7 +136,7 @@ Model.prototype.insertObj = function (obj, callback) {
 * @description: 更新数据
 * @param {Object} option：可选参数 更新条件
 * @param {Object} obj： 修改后的数据 
-* @param {Function} callback :（req,results）=>{}
+* @param {Function} callback :（err,results）=>{}
 */
 Model.prototype.update = function (option, obj, callback) {
     let str = '';
@@ -123,7 +168,7 @@ Model.prototype.update = function (option, obj, callback) {
 /**
 * @description: 删除数据
 * @param {Object} option：可选参数 删除条件
-* @param {Function} callback :（req,results）=>{}
+* @param {Function} callback :（err,results）=>{}
 */
 Model.prototype.delete = function (option, callback) {
     var str = '';
@@ -143,7 +188,7 @@ Model.prototype.delete = function (option, callback) {
 /**
 * @description: 执行sql语句
 * @param {String} str : sql语句
-* @param {Function} callback :（req,results）=>{}
+* @param {Function} callback :（err,results）=>{}
 */
 Model.prototype.sql = function (str, callback) {
     connection.query(str, (error, results, fields) => {

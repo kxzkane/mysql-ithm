@@ -22,10 +22,17 @@ let studentModel = hm.model('student', {
 var arr = [];
 for (var i = 1; i <= 10; i++) {
     arr.push({ name: '张三10', age: 30 })
-}
+};
 
 studentModel.insert(arr, (err, results) => {
     console.log(err);
     console.log(results);
     if (!err) console.log('增加成功');
 });
+
+// studentModel.find('name="111"',(err,results)=>{
+//     console.log(err);
+//     console.log(results);
+    
+    
+// })
