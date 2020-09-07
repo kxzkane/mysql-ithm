@@ -30,7 +30,7 @@ Model.prototype.find = function (options, callback) {
             //console.log(str);
             connection.query(str, (error, results, fields) => {
                 // console.log(error.sqlState);
-                if (error.sqlState == '42S02') {
+                if (error && error.sqlState == '42S02') {
                     callback('表格不存在', []);
                 } else {
                     callback(error, results, fields);
@@ -53,7 +53,7 @@ Model.prototype.find = function (options, callback) {
         connection.query(str, (error, results, fields) => {
             // console.log(error.sqlState);
 
-            if (error.sqlState == '42S02') {
+            if (error && error.sqlState == '42S02') {
                 callback('表格不存在', []);
             } else {
                 callback(error, results, fields);
